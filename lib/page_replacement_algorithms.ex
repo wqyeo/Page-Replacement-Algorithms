@@ -3,16 +3,8 @@ defmodule PageReplacementAlgorithms do
   Documentation for `PageReplacementAlgorithms`.
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> PageReplacementAlgorithms.hello()
-      :world
-
-  """
+  import UserInputGetter
   def hello do
-    :world
+    user_input = UserInputGetter.get_positive_float("Nopasss")
   end
 end
