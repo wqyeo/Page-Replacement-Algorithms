@@ -9,6 +9,7 @@ defmodule UserInputGetter do
     TerminalColor.blue(message)
     case IO.gets("") |> Integer.parse() do
       {number, _other} when number > 0 ->
+        IO.puts("") # Blank Line before the next output
         number
       _ ->
         IO.puts("Please enter a positive integer.\n")
@@ -21,6 +22,7 @@ defmodule UserInputGetter do
     TerminalColor.blue(message)
     case IO.gets("") |> Float.parse() do
       {number, _other} when number > 0 ->
+        IO.puts("") # Blank Line before the next output
         number
       _ ->
         IO.puts("Please enter a positive float.\n")
@@ -32,6 +34,7 @@ defmodule UserInputGetter do
   def get_page_list do
     TerminalColor.cyan("Input the page identifier in sequence as string, seperated by comma.")
     page_list = IO.gets("") |> String.trim() |> String.split(",") |> Enum.map(&String.trim/1)
+    IO.puts("") # Blank Line before the next output
     page_list
   end
 end
