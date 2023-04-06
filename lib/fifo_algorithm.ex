@@ -1,9 +1,9 @@
-defmodule LRUAlgorithm do
+defmodule FIFOAlgorithm do
   import TerminalColor
   import UserInputGetter
 
   defmodule PageFrame do
-    defstruct holding_page: "NIL", page_age: 99999
+    defstruct holding_page: "NIL"
   end
 
   @spec run :: none
@@ -14,30 +14,20 @@ defmodule LRUAlgorithm do
 
     # used for final output as a formatted table.
     output_table = [
-      ["Page Fault Count" , "|",  "Accessing Page", "|", "Page Frames (HOLDING_PAGE_ID [AGE])"],
+      ["Page Fault Count" , "|",  "Accessing Page", "|", "Page Frames (HOLDING_PAGE_ID)"],
       ["", "|", "", "|"]
     ]
 
     page_sequences = UserInputGetter.get_page_list()
 
-    acc_start = %{page_fault_count: 0, page_frames: page_frames, output_table: output_table}
+    acc_start = %{page_fault_count: 0, page_frames: page_frames, output_table: output_table, fifo_pointer: 0, frames_count: page_frame_count}
     # Foreach page sequence
     result = Enum.reduce(page_sequences, acc_start, fn page, acc ->
       page_frames = Map.get(acc, :page_frames)
 
-      # Increment the age of all page frames.
-      page_frames = Enum.map(page_frames, fn frame ->
-        %{frame | page_age: frame.page_age + 1}
-      end)
-
       page_exists? = Enum.any?(page_frames, fn frame -> frame.holding_page == page end)
       if page_exists? do
-        # Page existed before, just reset age to indicate used recently.
-        existing_index = Enum.find_index(page_frames, & &1.holding_page == page)
-        updated_frame = %PageFrame{holding_page: page, page_age: 0}
-        page_frames = List.replace_at(page_frames, existing_index, updated_frame)
-        acc = Map.replace(acc, :page_frames, page_frames)
-
+        # Page existed before,
         page_fault_count = Map.get(acc, :page_fault_count, 0)
         # Append current change to output table
         output_row = create_output_row(page, page_fault_count, page_frames)
@@ -47,10 +37,10 @@ defmodule LRUAlgorithm do
         acc
       else
         # Page doesn't exist.
-        # Find oldest frame, put new page into it and reset age.
-        oldest_frame_index = get_oldest_frame_index(page_frames)
-        updated_frame = %PageFrame{holding_page: page, page_age: 0}
-        page_frames = List.replace_at(page_frames, oldest_frame_index, updated_frame)
+        fifo_pointer = Map.get(acc, :fifo_pointer, 0)
+        # Replace on fifo index.
+        updated_frame = %PageFrame{holding_page: page}
+        page_frames = List.replace_at(page_frames, fifo_pointer, updated_frame)
         acc = Map.replace(acc, :page_frames, page_frames)
 
         # Increment page fault count
@@ -62,7 +52,14 @@ defmodule LRUAlgorithm do
         updated_output_table = Map.get(acc, :output_table) ++ [output_row]
         acc = Map.replace(acc, :output_table, updated_output_table)
 
-        acc
+        # Increment fifo index
+        fifo_pointer = fifo_pointer + 1
+        if fifo_pointer >= Map.get(acc, :frames_count, 0) do
+          fifo_pointer = 0
+          Map.replace(acc, :fifo_pointer, fifo_pointer)
+        else
+          Map.replace(acc, :fifo_pointer, fifo_pointer)
+        end
       end
     end)
 
@@ -76,14 +73,8 @@ defmodule LRUAlgorithm do
   def create_output_row(new_page, page_fault_count, page_frames) do
     row_header = ["#{page_fault_count}", "|", new_page, "|"]
     rows = Enum.map(page_frames, fn frame->
-      "#{frame.holding_page} [#{frame.page_age}]"
+      "#{frame.holding_page}"
     end)
     row_header ++ rows
-  end
-
-  @spec get_oldest_frame_index([%PageFrame{}]) :: integer
-  def get_oldest_frame_index(page_frames) do
-    max_age_frame = Enum.max_by(page_frames, & &1.page_age)
-    Enum.find_index(page_frames, fn frame -> frame.holding_page == max_age_frame.holding_page end)
   end
 end

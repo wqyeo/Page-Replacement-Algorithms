@@ -30,8 +30,8 @@ defmodule MRUAlgorithm do
         %{frame | page_age: frame.page_age + 1}
       end)
 
-      page_exists = Enum.any?(page_frames, fn frame -> frame.holding_page == page end)
-      if page_exists do
+      page_exists? = Enum.any?(page_frames, fn frame -> frame.holding_page == page end)
+      if page_exists? do
         # Page existed before, just reset age to indicate used recently.
         existing_index = Enum.find_index(page_frames, & &1.holding_page == page)
         updated_frame = %PageFrame{holding_page: page, page_age: 0}
