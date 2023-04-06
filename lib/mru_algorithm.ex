@@ -1,9 +1,9 @@
-defmodule LRUAlgorithm do
+defmodule MRUAlgorithm do
   import TerminalColor
   import UserInputGetter
 
   defmodule PageFrame do
-    defstruct holding_page: "NIL", page_age: 99999
+    defstruct holding_page: "NIL", page_age: -99999
   end
 
   @spec run :: none
@@ -47,10 +47,10 @@ defmodule LRUAlgorithm do
         acc
       else
         # Page doesn't exist.
-        # Find oldest frame, put new page into it and reset age.
-        oldest_frame_index = get_oldest_frame_index(page_frames)
+        # Find youngest frame, put new page into it and reset age.
+        youngest_frame_index = get_youngest_frame_index(page_frames)
         updated_frame = %PageFrame{holding_page: page, page_age: 0}
-        page_frames = List.replace_at(page_frames, oldest_frame_index, updated_frame)
+        page_frames = List.replace_at(page_frames, youngest_frame_index, updated_frame)
         acc = Map.replace(acc, :page_frames, page_frames)
 
         # Increment page fault count
@@ -81,9 +81,9 @@ defmodule LRUAlgorithm do
     row_header ++ rows
   end
 
-  @spec get_oldest_frame_index([%PageFrame{}]) :: integer
-  def get_oldest_frame_index(page_frames) do
-    max_age_frame = Enum.max_by(page_frames, & &1.page_age)
-    Enum.find_index(page_frames, fn frame -> frame.holding_page == max_age_frame.holding_page end)
+  @spec get_youngest_frame_index([%PageFrame{}]) :: integer
+  def get_youngest_frame_index(page_frames) do
+    min_age_frame = Enum.min_by(page_frames, & &1.page_age)
+    Enum.find_index(page_frames, fn frame -> frame.holding_page == min_age_frame.holding_page end)
   end
 end

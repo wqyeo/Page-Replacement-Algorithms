@@ -5,6 +5,7 @@ defmodule PageReplacementAlgorithms do
   import UserInputGetter
   import TerminalColor
   import LRUAlgorithm
+  import MRUAlgorithm
 
   @spec start :: none
   def start do
@@ -20,6 +21,7 @@ defmodule PageReplacementAlgorithms do
         LRUAlgorithm.run()
       2 ->
         TerminalColor.magenta("\nMRU Selected")
+        MRUAlgorithm.run()
       _->
         TerminalColor.red("Invalid selection... stopping.")
     end
